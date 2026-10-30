@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Torpedo</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div class="app" id="app" data-view="list">
+  <aside class="pane list" aria-label="Conversas">
+    <header class="top">
+      <div class="brand"><i aria-hidden="true"></i>Torpedo</div>
+      <button class="icon-btn" data-act="lab" id="labBtn" aria-label="Testar o detector de spam" title="Testar o detector"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6M10 3v6L4.5 19a1.5 1.5 0 001.3 2.2h12.4a1.5 1.5 0 001.3-2.2L14 9V3"/></svg></button>
+      <button class="icon-btn" data-act="settings" aria-label="Ajustes e proteção" title="Ajustes"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg></button>
+    </header>
+    <div class="search"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input id="q" type="search" placeholder="Buscar conversa ou mensagem" aria-label="Buscar"></div>
+    <nav class="tabs" id="tabs" role="tablist" aria-label="Filtros"></nav>
+    <div class="threads" id="threads"></div>
+    <button class="fab" data-act="newmsg"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Nova mensagem</button>
+  </aside>
+
+  <main class="pane chat" id="chatPane">
+    <section class="welcome" id="welcome">
+      <h2>Seus SMS, sem golpe no meio.</h2>
+      <p>Cada mensagem que chega passa pelo detector de spam antes de você ler. O que parece golpe vai para a aba Suspeitas, com a explicação do motivo.</p>
+      <div class="stats" id="stats"></div>
+      <div class="btns"><button class="btn primary" data-act="lab">Testar o detector</button><button class="btn" data-act="settings">Ajustes</button></div>
+    </section>
+    <section class="conv" id="conv" hidden>
+      <header class="chead" id="chead"></header>
+      <div id="banner"></div>
+      <div class="msgs" id="msgs" aria-live="polite"></div>
+      <form class="composer" id="composer">
+        <textarea id="msg" rows="1" placeholder="Escreva uma mensagem" aria-label="Mensagem"></textarea>
+        <button class="send" type="submit" aria-label="Enviar"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg></button>
+      </form>
+      <p class="locked" id="locked" hidden>Respostas ficam desativadas em conversas suspeitas. Se for uma pessoa conhecida, toque em “Não é spam”.</p>
+    </section>
+  </main>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+
+<section class="sheet" id="sheet-settings" role="dialog" aria-modal="true" aria-labelledby="t-settings" hidden>
+  <h2 id="t-settings">Ajustes e proteção</h2>
+  <p class="lead">Deixe o app do seu jeito e ajuste o quanto o detector deve desconfiar.</p>
+  <div class="switch"><div><b>Modo fácil</b><small>Letras maiores e só o essencial na tela.</small></div><button class="sw" id="easySw" role="switch" aria-checked="false" aria-label="Modo fácil" data-act="easy"></button></div>
+  <h3>Rigor do filtro</h3>
+  <div class="seg" id="sens">
+    <button data-act="sens" data-v="80">Leve</button>
+    <button data-act="sens" data-v="60">Equilibrado</button>
+    <button data-act="sens" data-v="40">Rigoroso</button>
+  </div>
+  <p class="note">Rigoroso separa mais mensagens, mas pode mandar alguma mensagem boa para Suspeitas. Você sempre pode devolver com “Não é spam”.</p>
+  <h3>Detector de spam</h3>
+  <p class="note" id="detStatus" style="margin-top:0"></p>
+  <div class="field" style="margin-top:.7em"><label for="apiUrl">Endereço da API do modelo de ML</label><input id="apiUrl" type="url" placeholder="http://localhost:8000" autocomplete="off"></div>
+  <div class="btns"><button class="btn primary" data-act="testapi">Conectar e testar</button><button class="btn" data-act="clearapi">Usar detector local</button></div>
+  <p class="note" id="apiMsg" aria-live="polite"></p>
+  <h3>Aprendizado</h3>
+  <p class="note" style="margin-top:0" id="fbInfo"></p>
+  <div class="actions" style="margin-top:.5em"><button class="btn" data-act="copyfb">Copiar correções (JSON)</button><button class="btn" data-act="close">Fechar</button></div>
+</section>
+
+<section class="sheet" id="sheet-lab" role="dialog" aria-modal="true" aria-labelledby="t-lab" hidden>
+  <h2 id="t-lab">Testar o detector</h2>
+  <p class="lead">Escolha um exemplo ou escreva um SMS. Veja a nota do detector e receba a mensagem como se tivesse chegado no celular.</p>
+  <div class="chips" id="presets"></div>
+  <div class="field"><label for="labFrom">Número de quem envia</label><input id="labFrom" inputmode="tel" value="+55 11 94400-7788"></div>
+  <div class="field"><label for="labText">Mensagem</label><textarea id="labText" rows="4"></textarea></div>
+  <div id="labResult"></div>
+  <div class="actions"><button class="btn" data-act="analyze">Só analisar</button><button class="btn primary" data-act="deliver">Receber como SMS</button><button class="btn" data-act="close">Fechar</button></div>
+</section>
+
+<section class="sheet" id="sheet-new" role="dialog" aria-modal="true" aria-labelledby="t-new" hidden>
+  <h2 id="t-new">Nova mensagem</h2>
+  <div class="field"><label for="newTo">Para</label><input id="newTo" list="contacts" placeholder="Nome ou número" autocomplete="off"><datalist id="contacts"></datalist></div>
+  <div class="field"><label for="newText">Mensagem</label><textarea id="newText" rows="4" placeholder="Escreva aqui"></textarea></div>
+  <div class="actions"><button class="btn primary" data-act="sendnew">Enviar</button><button class="btn" data-act="close">Cancelar</button></div>
+</section>
+
+<section class="sheet" id="sheet-link" role="dialog" aria-modal="true" aria-labelledby="t-link" hidden>
+  <h2 id="t-link">Cuidado com este link</h2>
+  <p class="lead" id="linkWhy"></p>
+  <span class="mono" id="linkUrl"></span>
+  <p class="note">Por segurança, o Torpedo nunca abre links sozinho. Na dúvida, entre direto no site oficial do banco ou da empresa, digitando o endereço.</p>
+  <div class="actions"><button class="btn primary" data-act="close">Entendi</button><button class="btn" data-act="copylink">Copiar endereço</button></div>
+</section>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+
+<!-- A ordem importa: cada arquivo usa o que os anteriores definem. -->
+<script src="js/utils.js"></script>
+<script src="js/config.js"></script>
+<script src="js/rules.data.js"></script>
+<script src="js/rules.js"></script>
+<script src="js/detector.js"></script>
+<script src="js/seed.js"></script>
+<script src="js/store.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
